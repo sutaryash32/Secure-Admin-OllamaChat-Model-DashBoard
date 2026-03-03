@@ -5,6 +5,7 @@ spring:
   application:
     name: ai-chat-service
 
+  # MySQL Database Configuration
   datasource:
     url: jdbc:mysql://localhost:3307/aibox?useUnicode=true&characterEncoding=utf8&createDatabaseIfNotExist=true
     username: root
@@ -18,13 +19,30 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
 
+  # JWT Configuration
   jwt:
     secret: mySecretKeyForJwtTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm
-    expiration: 86400000
+    expiration: 86400000  # 24 hours in milliseconds
 
+  # OAuth2 Client Configuration (Google)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 183781504942-qvr4b7qfqlq106is1kr4uqfaktu23kuo.apps.googleusercontent.com
+            client-secret: GOCSPXpL3nlcssNeEBmPbtpRSd1_K3BLoO
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
+  # Spring AI Ollama Configuration
   ai:
     ollama:
       base-url: http://localhost:11434
@@ -37,12 +55,14 @@ spring:
           top-k: 20
           top-p: 0.9
 
+# Logging
 logging:
   level:
     root: INFO
     com.ai.demo: DEBUG
     org.springframework.security: DEBUG
 
+# Management endpoints for monitoring
 management:
   endpoints:
     web:

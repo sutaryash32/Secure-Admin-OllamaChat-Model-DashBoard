@@ -20,10 +20,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     private String username;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")
@@ -35,9 +35,38 @@ public class User {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @Column(name = "google_id")
+    private String googleId;
+
+    @Column(name = "auth_provider")
+    private String authProvider; // "LOCAL", "GOOGLE", "LINKED"
+
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (enabled == null) {
+            enabled = true;
+        }
+        if (role == null) {
+            role = "ROLE_USER";
+        }
+        if (authProvider == null) {
+            authProvider = "LOCAL";
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

@@ -1,0 +1,25 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Welcome to AskAI</h1>
+      <p>Sign in to continue</p>
+    </div>
+
+    <div class="login-body">
+      <button class="google-login-btn" (click)="loginWithGoogle()" [disabled]="isLoading">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="google-icon">
+        <span>{{ isLoading ? 'Signing in...' : 'Continue with Google' }}</span>
+      </button>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+    <div class="login-footer">
+      <p>By signing in, you agree to our Terms of Service and Privacy Policy</p>
+    </div>
+</div>
