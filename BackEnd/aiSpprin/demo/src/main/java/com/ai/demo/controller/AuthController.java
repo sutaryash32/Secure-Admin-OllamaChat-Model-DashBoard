@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -18,20 +17,17 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public Mono<ResponseEntity<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        return authService.register(request)
-                .map(ResponseEntity::ok);
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request)
-                .map(ResponseEntity::ok);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/refresh")
-    public Mono<ResponseEntity<AuthResponse>> refreshToken(@RequestBody String refreshToken) {
-        return authService.refreshToken(refreshToken)
-                .map(ResponseEntity::ok);
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody String refreshToken) {
+        return ResponseEntity.ok(authService.refreshToken(refreshToken));
     }
 }

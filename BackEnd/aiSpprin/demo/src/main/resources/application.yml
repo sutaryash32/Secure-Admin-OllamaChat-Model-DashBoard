@@ -5,14 +5,21 @@ spring:
   application:
     name: ai-chat-service
 
-  # R2DBC Configuration (Reactive MySQL)
-  r2dbc:
-    url: r2dbc:mysql://localhost:3307/aibox?useUnicode=true&characterEncoding=utf8
+  # JPA/Hibernate Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3307/aibox?useUnicode=true&characterEncoding=utf8&createDatabaseIfNotExist=true
     username: root
     password: root
-    pool:
-      enabled: true
-      max-size: 10
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
 
   # JWT Configuration
   jwt:

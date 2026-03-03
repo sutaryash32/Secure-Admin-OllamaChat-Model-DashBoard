@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
@@ -25,98 +24,86 @@ public class AuthService {
     @Value("${spring.jwt.expiration}")
     private long jwtExpiration;
 
-    public Mono<AuthResponse> register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         // Check if username already exists
-        return userRepository.existsByUsername(request.getUsername())
-                .flatMap(exists -> {
-                    if (exists) {
-                        return Mono.error(new RuntimeException("Username already exists"));
-                    }
-                    return userRepository.existsByEmail(request.getEmail());
-                })
-                .flatMap(exists -> {
-                    if (exists) {
-                        return Mono.error(new RuntimeException("Email already exists"));
-                    }
-                    // Create new user
-                    User user = User.builder()
-                            .username(request.getUsername())
-                            .email(request.getEmail())
-                            .password(passwordEncoder.encode(request.getPassword()))
-                            .role(request.getRole() != null ? request.getRole() : "ROLE_USER")
-                            .enabled(true)
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build();
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+        
+        // Create new user
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole() != null ? request.getRole() : "ROLE_USER")
+                .enabled(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-                    return userRepository.save(user);
-                })
-                .flatMap(user -> {
-                    String token = jwtService.generateToken(user.getUsername(), java.util.List.of(user.getRole()));
-                    String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+        user = userRepository.save(user);
 
-                    AuthResponse response = AuthResponse.builder()
-                            .token(token)
-                            .refreshToken(refreshToken)
-                            .username(user.getUsername())
-                            .email(user.getEmail())
-                            .role(user.getRole())
-                            .expiresIn(jwtExpiration)
-                            .build();
+        String token = jwtService.generateToken(user.getUsername(), java.util.List.of(user.getRole()));
+        String refreshToken = jwtService.generateRefreshToken(user.getUsername());
 
-                    return Mono.just(response);
-                });
+        return AuthResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .expiresIn(jwtExpiration)
+                .build();
     }
 
-    public Mono<AuthResponse> login(LoginRequest request) {
-        return userRepository.findByUsername(request.getUsername())
-                .flatMap(user -> {
-                    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                        return Mono.error(new RuntimeException("Invalid credentials"));
-                    }
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-                    if (!user.getEnabled()) {
-                        return Mono.error(new RuntimeException("Account is disabled"));
-                    }
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
 
-                    String token = jwtService.generateToken(user.getUsername(), java.util.List.of(user.getRole()));
-                    String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+        if (!user.getEnabled()) {
+            throw new RuntimeException("Account is disabled");
+        }
 
-                    AuthResponse response = AuthResponse.builder()
-                            .token(token)
-                            .refreshToken(refreshToken)
-                            .username(user.getUsername())
-                            .email(user.getEmail())
-                            .role(user.getRole())
-                            .expiresIn(jwtExpiration)
-                            .build();
+        String token = jwtService.generateToken(user.getUsername(), java.util.List.of(user.getRole()));
+        String refreshToken = jwtService.generateRefreshToken(user.getUsername());
 
-                    return Mono.just(response);
-                });
+        return AuthResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .expiresIn(jwtExpiration)
+                .build();
     }
 
-    public Mono<AuthResponse> refreshToken(String refreshToken) {
+    public AuthResponse refreshToken(String refreshToken) {
         String username = jwtService.extractUsername(refreshToken);
 
-        return userRepository.findByUsername(username)
-                .flatMap(user -> {
-                    if (!jwtService.isTokenValid(refreshToken, username)) {
-                        return Mono.error(new RuntimeException("Invalid refresh token"));
-                    }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-                    String newToken = jwtService.generateToken(user.getUsername(), java.util.List.of(user.getRole()));
-                    String newRefreshToken = jwtService.generateRefreshToken(user.getUsername());
+        if (!jwtService.isTokenValid(refreshToken, username)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
 
-                    AuthResponse response = AuthResponse.builder()
-                            .token(newToken)
-                            .refreshToken(newRefreshToken)
-                            .username(user.getUsername())
-                            .email(user.getEmail())
-                            .role(user.getRole())
-                            .expiresIn(jwtExpiration)
-                            .build();
+        String newToken = jwtService.generateToken(user.getUsername(), java.util.List.of(user.getRole()));
+        String newRefreshToken = jwtService.generateRefreshToken(user.getUsername());
 
-                    return Mono.just(response);
-                });
+        return AuthResponse.builder()
+                .token(newToken)
+                .refreshToken(newRefreshToken)
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .expiresIn(jwtExpiration)
+                .build();
     }
 }
