@@ -6,10 +6,15 @@ import com.ai.demo.dto.RegisterRequestDto;
 import com.ai.demo.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -30,5 +35,17 @@ public class AuthController {
     @PostMapping("/refresh")
     public Mono<ResponseEntity<AuthResponseDto>> refresh(@RequestBody String refreshToken) {
         return authService.refreshToken(refreshToken.trim()).map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/logout")
+    public Mono<ResponseEntity<Map<String, String>>> logout() {
+        return ReactiveSecurityContextHolder.getContext()
+                .doOnNext(ctx -> {
+                    log.info("User logging out: {}", ctx.getAuthentication() != null
+                            ? ctx.getAuthentication().getName() : "unknown");
+                    ctx.setAuthentication(null);
+                })
+                .then(Mono.just(ResponseEntity.ok(Map.of("message", "Logged out successfully"))))
+                .defaultIfEmpty(ResponseEntity.ok(Map.of("message", "Logged out successfully")));
     }
 }

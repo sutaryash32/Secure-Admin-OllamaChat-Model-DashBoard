@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CricketResponse } from '../model/cricket.response';
 import { AuthService } from '../auth/auth.service';
 
 @Injectable({
@@ -13,126 +12,130 @@ export class ApiService {
 
   constructor(private authService: AuthService) {}
 
+  // ── Chat (SSE via fetch — supports Authorization header) ──
+
   getStreamedResponse(prompt: string): Observable<string> {
     const url = `${this.BASE_URL}/chat?prompt=${encodeURIComponent(prompt)}`;
-    return this.openSseConnection(url);
+    return this.fetchSse(url);
   }
 
   getCricketStreamedResponse(prompt: string): Observable<string> {
     const url = `${this.BASE_URL}/chat/cricket?prompt=${encodeURIComponent(prompt)}`;
-    return this.openSseConnection(url);
+    return this.fetchSse(url);
   }
+
+  // ── Admin ─────────────────────────────────────────────────
 
   getAllUsers(): Observable<any> {
-    return new Observable<any>((observer: any) => {
-      fetch(`${this.ADMIN_URL}/users`, {
-        headers: this.getAuthHeaders()
-      })
-      .then((res: any) => res.json())
-      .then((data: any) => {
-        observer.next(data);
-        observer.complete();
-      })
-      .catch((err: any) => observer.error(err));
+    return new Observable(observer => {
+      fetch(`${this.ADMIN_URL}/users`, { headers: this.authHeaders() })
+        .then(res => res.json())
+        .then(data => { observer.next(data); observer.complete(); })
+        .catch(err => observer.error(err));
     });
   }
 
-  updateUserRole(username: string, role: string): Observable<any> {
-    return new Observable<any>((observer: any) => {
-      fetch(`${this.ADMIN_URL}/users/${username}/role`, {
+  updateUserRole(id: number, role: string): Observable<any> {
+    return new Observable(observer => {
+      fetch(`${this.ADMIN_URL}/users/${id}/role`, {
         method: 'PUT',
-        headers: this.getAuthHeaders(),
+        headers: this.authHeaders(),
         body: JSON.stringify({ role })
       })
-      .then((res: any) => res.json())
-      .then((data: any) => {
-        observer.next(data);
-        observer.complete();
-      })
-      .catch((err: any) => observer.error(err));
+        .then(res => res.json())
+        .then(data => { observer.next(data); observer.complete(); })
+        .catch(err => observer.error(err));
     });
   }
 
-  deleteUser(username: string): Observable<any> {
-    return new Observable<any>((observer: any) => {
-      fetch(`${this.ADMIN_URL}/users/${username}`, {
+  deleteUser(id: number): Observable<any> {
+    return new Observable(observer => {
+      fetch(`${this.ADMIN_URL}/users/${id}`, {
         method: 'DELETE',
-        headers: this.getAuthHeaders()
+        headers: this.authHeaders()
       })
-      .then((res: any) => {
-        if (res.ok) {
-          observer.next({ success: true });
-          observer.complete();
-        } else {
-          observer.error(new Error('Failed to delete user'));
-        }
-      })
-      .catch((err: any) => observer.error(err));
+        .then(res => {
+          if (res.ok) { observer.next({ success: true }); observer.complete(); }
+          else observer.error(new Error('Failed to delete user'));
+        })
+        .catch(err => observer.error(err));
     });
   }
 
   getChatAnalytics(): Observable<any> {
-    return new Observable<any>((observer: any) => {
-      fetch(`${this.ADMIN_URL}/analytics`, {
-        headers: this.getAuthHeaders()
-      })
-      .then((res: any) => res.json())
-      .then((data: any) => {
-        observer.next(data);
-        observer.complete();
-      })
-      .catch((err: any) => observer.error(err));
+    return new Observable(observer => {
+      fetch(`${this.ADMIN_URL}/analytics`, { headers: this.authHeaders() })
+        .then(res => res.json())
+        .then(data => { observer.next(data); observer.complete(); })
+        .catch(err => observer.error(err));
     });
   }
 
-  private getAuthHeaders(): HeadersInit {
+  // ── Private helpers ───────────────────────────────────────
+
+  private authHeaders(): HeadersInit {
     const token = this.authService.getToken();
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
   }
 
-  private openSseConnection(url: string): Observable<string> {
-    return new Observable<string>((observer: any) => {
+  // ✅ Uses fetch() instead of EventSource so we can send Authorization header
+  private fetchSse(url: string): Observable<string> {
+    return new Observable(observer => {
       const token = this.authService.getToken();
-      const authUrl = token ? `${url}&Authorization=Bearer=${encodeURIComponent(token)}` : url;
+      let cancelled = false;
 
-      const eventSource = new EventSource(authUrl);
-
-      eventSource.onmessage = (event: MessageEvent) => {
-        try {
-          const data: CricketResponse = JSON.parse(event.data);
-
-          if (data.content === '[DONE]') {
-            observer.complete();
-            eventSource.close();
-            return;
-          }
-
-          if (data.content) {
-            observer.next(data.content);
-          }
-
-        } catch (e: any) {
-          console.error('Failed to parse SSE message:', e);
+      fetch(url, {
+        headers: {
+          'Accept': 'text/event-stream',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
-      };
-
-      eventSource.onerror = () => {
-        if (eventSource.readyState === EventSource.CLOSED) {
-          observer.complete();
-          eventSource.close();
-        } else if (eventSource.readyState === EventSource.CONNECTING) {
-          eventSource.close();
-          observer.complete();
-        } else {
-          observer.error('SSE connection error');
-          eventSource.close();
+      }).then(response => {
+        if (!response.ok) {
+          observer.error(`HTTP error: ${response.status}`);
+          return;
         }
-      };
 
-      return () => eventSource.close();
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        const read = () => {
+          if (cancelled) return;
+          reader.read().then(({ done, value }) => {
+            if (done) { observer.complete(); return; }
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';  // keep incomplete last line
+
+            for (const line of lines) {
+              if (line.startsWith('data:')) {
+                const jsonStr = line.slice(5).trim();
+                if (!jsonStr) continue;
+                try {
+                  const data = JSON.parse(jsonStr);
+                  if (data.content === '[DONE]') {
+                    observer.complete();
+                    return;
+                  }
+                  if (data.content) observer.next(data.content);
+                } catch (e) {
+                  console.error('Failed to parse SSE chunk:', e);
+                }
+              }
+            }
+            read(); // read next chunk
+          }).catch(err => observer.error(err));
+        };
+
+        read();
+      }).catch(err => observer.error(err));
+
+      // cleanup on unsubscribe
+      return () => { cancelled = true; };
     });
   }
 }

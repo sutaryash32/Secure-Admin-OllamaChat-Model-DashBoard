@@ -1,16 +1,13 @@
 package com.ai.demo.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chat_history")
-@Data
+@Getter @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,17 +20,17 @@ public class ChatHistory {
     @Column(name = "user_email", nullable = false)
     private String userEmail;
 
-    @Column(name = "message", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String message;
 
-    @Column(name = "response", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String response;
 
-    @Column(name = "chat_type")
     @Enumerated(EnumType.STRING)
+    @Column(name = "chat_type")
     private ChatType chatType;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
@@ -41,8 +38,5 @@ public class ChatHistory {
         createdAt = LocalDateTime.now();
     }
 
-    public enum ChatType {
-        GENERAL,
-        CRICKET
-    }
+    public enum ChatType { GENERAL, CRICKET }
 }

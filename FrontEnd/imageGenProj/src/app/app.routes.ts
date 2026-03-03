@@ -26,8 +26,13 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: '',
+    path: 'dashboard',
     redirectTo: '/chat',
+    pathMatch: 'full'
+  },
+  {
+    path: '',
+    redirectTo: '/login',
     pathMatch: 'full'
   }
 ];

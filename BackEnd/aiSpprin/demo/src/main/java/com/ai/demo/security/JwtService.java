@@ -30,7 +30,7 @@ public class JwtService {
                 .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(signingKey())
+                .signWith(signingKey(), Jwts.SIG.HS512)  // ✅ explicit HS512
                 .compact();
     }
 
@@ -39,7 +39,7 @@ public class JwtService {
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs * 7))
-                .signWith(signingKey())
+                .signWith(signingKey(), Jwts.SIG.HS512)  // ✅ explicit HS512
                 .compact();
     }
 
@@ -85,3 +85,4 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }
+

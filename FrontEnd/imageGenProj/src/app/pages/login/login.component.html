@@ -11,11 +11,7 @@
         <span>{{ isLoading ? 'Signing in...' : 'Continue with Google' }}</span>
       </button>
 
-      <div class="divider">
-        <span>or</span>
-      </div>
-
-      <div class="error-message" *ngIf="errorMessage">
+          <div class="error-message" *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
 

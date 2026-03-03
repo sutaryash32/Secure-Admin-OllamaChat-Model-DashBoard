@@ -25,13 +25,30 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+  # ── OAuth2 Google Login ───────────────────────────────────
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 183781504942-bkeaqdp7i1qlk3h4iendge0i0j406ua3.apps.googleusercontent.com
+            client-secret: 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
+            scope: openid, profile, email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
   # ── Spring AI / Ollama ────────────────────────────────────
   ai:
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
         options:
-          model: ${OLLAMA_MODEL:mistral:7b-instruct}
+          model: ${OLLAMA_MODEL:mistral}   # change to whichever model you pulled
           num-predict: 150
           num-ctx: 512
           temperature: 0.7
@@ -41,6 +58,10 @@ app:
   jwt:
     secret: ${JWT_SECRET:mySecretKeyForJwtTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24h
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  admin:
+    email-domains: ${ADMIN_EMAIL_DOMAINS:motivitylabs.com}
 
 # ── Actuator / Prometheus ──────────────────────────────────
 management:

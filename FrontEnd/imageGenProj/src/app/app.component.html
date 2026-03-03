@@ -1,11 +1,19 @@
-<div class="container">
-  <!-- Side menu -->
-  <div class="sidebar">
-    <app-sidemenu></app-sidemenu>
-  </div>
+<!-- Not authenticated: full-viewport for login / oauth-callback pages -->
+@if (!isAuthenticated()) {
+  <router-outlet></router-outlet>
+}
 
-  <!-- Content area -->
-  <div class="content">
-    <router-outlet></router-outlet>
+<!-- Authenticated: sidebar + content layout -->
+@if (isAuthenticated()) {
+  <div class="container">
+    <!-- Side menu -->
+    <div class="sidebar">
+      <app-sidemenu></app-sidemenu>
+    </div>
+
+    <!-- Content area -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
   </div>
-</div>  
+}

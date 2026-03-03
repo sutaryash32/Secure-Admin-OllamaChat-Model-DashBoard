@@ -52,7 +52,7 @@ export class OAuthCallbackComponent implements OnInit {
 
       if (token && username) {
         this.authService.handleOAuth2Success(token, refreshToken, username, role, email);
-        this.router.navigate(['/chat']);
+        this.router.navigate(['/dashboard']);
       } else {
         console.error('OAuth2 callback failed: missing parameters');
         this.router.navigate(['/login']);
