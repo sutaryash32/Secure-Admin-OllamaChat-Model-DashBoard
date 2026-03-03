@@ -3,8 +3,6 @@ package com.ai.demo.service;
 import reactor.core.publisher.Flux;
 
 public interface ChatService {
-
-    public Flux<String> generateResponseReactive(String prompt);
-
-    public Flux<String> generateCricketResponseReactive(String prompt);
+    Flux<String> streamResponse(String prompt);
+    Flux<String> streamCricketResponse(String prompt);
 }

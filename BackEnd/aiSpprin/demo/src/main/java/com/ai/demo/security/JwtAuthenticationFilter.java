@@ -1,6 +1,7 @@
 package com.ai.demo.security;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,8 +13,8 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements WebFilter {
@@ -22,9 +23,7 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String authHeader = exchange.getRequest()
-                .getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return chain.filter(exchange);
@@ -33,29 +32,20 @@ public class JwtAuthenticationFilter implements WebFilter {
         String token = authHeader.substring(7);
 
         try {
-            String username = jwtService.extractUsername(token);
+            if (!jwtService.isValid(token)) return chain.filter(exchange);
 
-            List<String> roles = jwtService.extractClaim(token,
-                    claims -> claims.get("roles", List.class));
+            String email = jwtService.extractEmail(token);
+            List<SimpleGrantedAuthority> authorities = jwtService.extractRoles(token).stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
 
-            if (username != null && !jwtService.isTokenExpired(token)) {
-                List<SimpleGrantedAuthority> authorities = roles == null
-                        ? List.of()
-                        : roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+            var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
+            return chain.filter(exchange)
+                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-
-                return chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder
-                                .withAuthentication(auth));
-            }
         } catch (Exception e) {
-            // Invalid token — continue without auth
+            log.debug("JWT filter error: {}", e.getMessage());
+            return chain.filter(exchange);
         }
-
-        return chain.filter(exchange);
     }
 }

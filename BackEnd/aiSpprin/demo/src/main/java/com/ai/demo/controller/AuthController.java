@@ -1,35 +1,34 @@
 package com.ai.demo.controller;
 
-import com.ai.demo.dto.AuthResponse;
-import com.ai.demo.dto.LoginRequest;
-import com.ai.demo.dto.RegisterRequest;
+import com.ai.demo.dto.AuthResponseDto;
+import com.ai.demo.dto.LoginRequestDto;
+import com.ai.demo.dto.RegisterRequestDto;
 import com.ai.demo.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public Mono<ResponseEntity<AuthResponseDto>> register(@Valid @RequestBody RegisterRequestDto req) {
+        return authService.register(req).map(ResponseEntity::ok);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public Mono<ResponseEntity<AuthResponseDto>> login(@Valid @RequestBody LoginRequestDto req) {
+        return authService.login(req).map(ResponseEntity::ok);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@RequestBody String refreshToken) {
-        return ResponseEntity.ok(authService.refreshToken(refreshToken));
+    public Mono<ResponseEntity<AuthResponseDto>> refresh(@RequestBody String refreshToken) {
+        return authService.refreshToken(refreshToken.trim()).map(ResponseEntity::ok);
     }
 }

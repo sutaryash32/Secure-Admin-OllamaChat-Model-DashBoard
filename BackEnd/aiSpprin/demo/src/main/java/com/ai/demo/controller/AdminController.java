@@ -1,79 +1,58 @@
 package com.ai.demo.controller;
 
+import com.ai.demo.exception.AppException;
 import com.ai.demo.model.User;
 import com.ai.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
 
     private final UserRepository userRepository;
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
-    }
-
-    @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/users/{id}/enable")
-    public ResponseEntity<User> enableUser(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setEnabled(true);
-                    return ResponseEntity.ok(userRepository.save(user));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public Mono<List<User>> getAllUsers() {
+        return Mono.fromCallable(userRepository::findAll)
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @PutMapping("/users/{id}/disable")
-    public ResponseEntity<User> disableUser(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setEnabled(false);
-                    return ResponseEntity.ok(userRepository.save(user));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/users/{id}/role")
-    public ResponseEntity<User> updateUserRole(@PathVariable Long id, @RequestBody String role) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setRole(role);
-                    return ResponseEntity.ok(userRepository.save(user));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<User>> disableUser(@PathVariable Long id) {
+        return Mono.fromCallable(() ->
+                userRepository.findById(id).map(u -> {
+                    u.setIsActive(false);
+                    return ResponseEntity.ok(userRepository.save(u));
+                }).orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND))
+        ).subscribeOn(Schedulers.boundedElastic());
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        if (userRepository.existsById(id)) {
+    public Mono<ResponseEntity<Void>> deleteUser(@PathVariable Long id) {
+        return Mono.<ResponseEntity<Void>>fromCallable(() -> {
+            if (!userRepository.existsById(id)) {
+                throw new AppException("User not found", HttpStatus.NOT_FOUND);
+            }
             userRepository.deleteById(id);
             return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     @GetMapping("/analytics")
-    public ResponseEntity<AnalyticsResponse> getAnalytics() {
-        long count = userRepository.count();
-        return ResponseEntity.ok(new AnalyticsResponse(count, "Chat analytics placeholder"));
+    public Mono<Map<String, Object>> analytics() {
+        return Mono.fromCallable(() ->
+                Map.<String, Object>of("totalUsers", userRepository.count())
+        ).subscribeOn(Schedulers.boundedElastic());
     }
-
-    public record AnalyticsResponse(long totalUsers, String message) {}
 }
-

@@ -1,5 +1,7 @@
 package com.ai.demo.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -11,83 +13,69 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
-    private final OllamaChatModel ollamaChatModel;
-    private final Random random = new Random();
+    private final OllamaChatModel ollamaModel;
+    private final Random rng = new Random();
 
     private static final SystemMessage GENERAL_SYSTEM = new SystemMessage(
-            "You are a helpful assistant. Keep your responses short, concise and to the point. " +
-                    "Maximum 3-4 sentences. No long paragraphs."
+            "You are a helpful assistant. Keep responses concise: 3-4 sentences max."
     );
-
     private static final SystemMessage CRICKET_SYSTEM = new SystemMessage(
-            "You are a cricket expert assistant. Keep your responses short, concise and to the point. " +
-                    "Maximum 3-4 sentences. No long paragraphs. Only answer cricket-related questions."
+            "You are a cricket expert. Keep responses concise: 3-4 sentences max. " +
+                    "Only answer cricket-related questions."
     );
-
-    private static final List<String> OUT_OF_SYLLABUS_RESPONSES = List.of(
-            "Hmm… that's outside my syllabus!",
+    private static final List<String> OFF_TOPIC_REPLIES = List.of(
+            "Hmm, that's outside my syllabus!",
             "I'm trained only for cricket talk 🏏",
             "Try asking me about IPL, wickets, or scores!",
-            "Oops, that's not cricket-related!",
-            "Stick to cricket and I'll shine!"
+            "Oops, that's not cricket-related!"
     );
 
-    public ChatServiceImpl(OllamaChatModel ollamaChatModel) {
-        this.ollamaChatModel = ollamaChatModel;
+    @Override
+    public Flux<String> streamResponse(String prompt) {
+        return ollamaModel
+                .stream(new Prompt(List.of(GENERAL_SYSTEM, new UserMessage(prompt))))
+                .mapNotNull(r -> r.getResult().getOutput().getText())
+                .filter(t -> !t.isBlank());
     }
 
     @Override
-    public Flux<String> generateResponseReactive(String prompt) {
-        return ollamaChatModel.stream(new Prompt(List.of(GENERAL_SYSTEM, new UserMessage(prompt))))
-                .map(response -> response.getResult().getOutput().getText())
-                .filter(text -> text != null && !text.isEmpty());
-    }
-
-    @Override
-    public Flux<String> generateCricketResponseReactive(String prompt) {
-        return isCricketRelatedDynamic(prompt)
-                .cache() // ✅ prevent multiple subscriptions
+    public Flux<String> streamCricketResponse(String prompt) {
+        return isCricketRelated(prompt)
+                .cache()
                 .flatMapMany(isCricket -> {
                     if (!isCricket) {
-                        String reply = OUT_OF_SYLLABUS_RESPONSES.get(
-                                random.nextInt(OUT_OF_SYLLABUS_RESPONSES.size())
-                        );
-                        return Flux.just(reply);
+                        return Flux.just(OFF_TOPIC_REPLIES.get(rng.nextInt(OFF_TOPIC_REPLIES.size())));
                     }
-
-                    return ollamaChatModel.stream(new Prompt(List.of(CRICKET_SYSTEM, new UserMessage(prompt))))
-                            .map(resp -> resp.getResult().getOutput().getText())
-                            .filter(text -> text != null && !text.isEmpty());
+                    return ollamaModel
+                            .stream(new Prompt(List.of(CRICKET_SYSTEM, new UserMessage(prompt))))
+                            .mapNotNull(r -> r.getResult().getOutput().getText())
+                            .filter(t -> !t.isBlank());
                 });
     }
 
-    private Mono<Boolean> isCricketRelatedDynamic(String prompt) {
-        String classificationPrompt = """
-                You are a strict topic classifier. Your job is to determine if a query is about cricket.
+    private Mono<Boolean> isCricketRelated(String prompt) {
+        String classifierPrompt = """
+            You are a strict topic classifier. Reply ONLY with YES or NO.
+            Is the following query about cricket (the sport)?
+            Query: %s
+            Answer:
+            """.formatted(prompt);
 
-                Rules:
-                - Reply with ONLY the single word: YES or NO
-                - Do not add any explanation, punctuation, or extra words
-                - YES = the query is about cricket (the sport)
-                - NO = the query is not about cricket
-
-                Query: %s
-
-                Answer (YES or NO only):
-                """.formatted(prompt);
-
-        return ollamaChatModel.stream(new Prompt(new UserMessage(classificationPrompt)))
-                .map(resp -> resp.getResult().getOutput().getText())
-                .filter(text -> text != null && !text.isEmpty())
+        return ollamaModel
+                .stream(new Prompt(new UserMessage(classifierPrompt)))
+                .mapNotNull(r -> r.getResult().getOutput().getText())
+                .filter(t -> !t.isBlank())
                 .take(5)
                 .collectList()
                 .map(parts -> {
-                    String fullResponse = String.join("", parts).trim().toUpperCase();
-                    System.out.println("Classifier response: " + fullResponse); // ✅ debug log
-                    return fullResponse.contains("YES");
+                    String result = String.join("", parts).trim().toUpperCase();
+                    log.debug("Cricket classifier result for '{}': {}", prompt, result);
+                    return result.contains("YES");
                 });
     }
 }
