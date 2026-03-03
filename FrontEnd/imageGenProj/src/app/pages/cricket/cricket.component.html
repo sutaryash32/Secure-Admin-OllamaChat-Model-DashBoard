@@ -1,0 +1,30 @@
+<div class="chat-container">
+
+  <!-- Input area -->
+  <textarea
+    [(ngModel)]="inputTextPrompt"
+    (keydown)="onKeyDown($event)"
+    [disabled]="isStreaming"
+    class="chat-input"
+    rows="3"
+    placeholder="Type your message here...">
+  </textarea>
+
+  <button class="chat-button" (click)="askClicked()" [disabled]="isStreaming || !inputTextPrompt.trim()">
+    {{ isStreaming ? 'Thinking...' : 'Ask' }}
+  </button>
+
+  <button class="stop-button" (click)="stopStreaming()" *ngIf="isStreaming">
+    ⏹ Stop
+  </button>
+
+  <!-- Messages -->
+  <div class="message-container">
+    <div *ngFor="let m of messageArray" [ngClass]="m.isUser ? 'user' : 'bot'">
+      <p>{{ m.text }}</p>
+        <p *ngIf="!m.text && !m.isUser" class="thinking-dots"> ●●●</p>
+    </div>
+    <div #scrollAnchor></div>
+  </div>
+
+</div>

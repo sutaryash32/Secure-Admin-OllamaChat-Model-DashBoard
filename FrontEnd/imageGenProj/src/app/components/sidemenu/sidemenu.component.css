@@ -1,0 +1,31 @@
+.menu-items {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.menu-items a {
+  color: white;              /* force text color */
+  text-decoration: none;     /* remove underline */
+  display: block;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.menu-items a:hover,
+.menu-items a.active {
+  background-color: #34495e; /* highlight on hover/active */
+  color: #fff;               /* keep text white */
+}
+
+
+.menu-items li {
+
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.menu-items li:hover {
+  background-color: #34495e;
+}
