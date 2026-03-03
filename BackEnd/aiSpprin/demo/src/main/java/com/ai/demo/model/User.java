@@ -1,12 +1,10 @@
 package com.ai.demo.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
@@ -14,30 +12,32 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("users")
+@Entity
+@Table(name = "users")
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column("username")
+    @Column(name = "username")
     private String username;
 
-    @Column("email")
+    @Column(name = "email")
     private String email;
 
-    @Column("password")
+    @Column(name = "password")
     private String password;
 
-    @Column("role")
+    @Column(name = "role")
     private String role;
 
-    @Column("enabled")
+    @Column(name = "enabled")
     private Boolean enabled;
 
-    @Column("created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column("updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

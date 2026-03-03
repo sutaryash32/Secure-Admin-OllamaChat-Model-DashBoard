@@ -1,4 +1,4 @@
-package com.ai.demo.Service;
+package com.ai.demo.service;
 
 import reactor.core.publisher.Flux;
 

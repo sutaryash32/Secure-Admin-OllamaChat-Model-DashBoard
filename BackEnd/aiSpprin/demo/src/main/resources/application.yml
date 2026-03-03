@@ -5,29 +5,26 @@ spring:
   application:
     name: ai-chat-service
 
-  # R2DBC Configuration (Reactive MySQL)
-  r2dbc:
-    url: r2dbc:mysql://localhost:3307/aibox?useUnicode=true&characterEncoding=utf8
+  datasource:
+    url: jdbc:mysql://localhost:3307/aibox?useUnicode=true&characterEncoding=utf8&createDatabaseIfNotExist=true
     username: root
     password: root
-    pool:
-      enabled: true
-      max-size: 10
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
-  # JWT Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
   jwt:
     secret: mySecretKeyForJwtTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm
-    expiration: 86400000  # 24 hours in milliseconds
+    expiration: 86400000
 
-  # OAuth2 Resource Server
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8080
-          jwk-set-uri: http://localhost:8080/.well-known/jwks.json
 
-  # Spring AI Ollama Configuration
   ai:
     ollama:
       base-url: http://localhost:11434
@@ -40,14 +37,12 @@ spring:
           top-k: 20
           top-p: 0.9
 
-# Logging
 logging:
   level:
     root: INFO
     com.ai.demo: DEBUG
     org.springframework.security: DEBUG
 
-# Management endpoints for monitoring
 management:
   endpoints:
     web:

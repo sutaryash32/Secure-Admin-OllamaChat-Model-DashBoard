@@ -25,16 +25,20 @@
     </properties>
 
     <dependencies>
-        <!-- R2DBC for Reactive Database -->
+        <!-- JPA for User Management (blocking but reliable) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.mysql.eng</groupId>
-            <artifactId>r2dbc-mysql</artifactId>
-            <version>${r2dbc-mysql.version}</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-relational</artifactId>
+            <version>4.1.0-M1</version>
         </dependency>
 
         <!-- Reactive WebFlux (for SSE streaming) -->

@@ -1,4 +1,4 @@
-package com.ai.demo.Service;
+package com.ai.demo.service;
 
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
