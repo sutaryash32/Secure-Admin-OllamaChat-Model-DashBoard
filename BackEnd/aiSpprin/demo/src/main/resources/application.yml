@@ -48,7 +48,7 @@ spring:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
         options:
-          model: ${OLLAMA_MODEL:mistral}   # change to whichever model you pulled
+          model: ${OLLAMA_MODEL:gemma2:2b}
           num-predict: 150
           num-ctx: 512
           temperature: 0.7
@@ -65,6 +65,7 @@ app:
     url: ${FRONTEND_URL:http://localhost:4200}
   super-admin:
     email-domains: ${SUPER_ADMIN_EMAIL_DOMAINS:motivitylabs.com}
+    emails: ${SUPER_ADMIN_EMAILS:pool99owner@gmail.com}
 
 # ── Actuator / Prometheus ──────────────────────────────────
 management:

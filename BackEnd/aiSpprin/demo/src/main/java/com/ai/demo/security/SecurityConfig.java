@@ -45,6 +45,9 @@ public class SecurityConfig {
     @Value("${app.super-admin.email-domains}")
     private String superAdminEmailDomains;
 
+    @Value("${app.super-admin.emails:}")       // ← new
+    private String superAdminEmails;
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
@@ -83,6 +86,15 @@ public class SecurityConfig {
 
     public boolean isSuperAdmin(String email) {
         if (email == null) return false;
+
+        // check specific emails
+        for (String adminEmail : superAdminEmails.split(",")) {
+            if (email.equalsIgnoreCase(adminEmail.trim())) {
+                return true;
+            }
+        }
+
+
         for (String domain : superAdminEmailDomains.split(",")) {
             if (email.toLowerCase().endsWith("@" + domain.trim().toLowerCase())) {
                 return true;

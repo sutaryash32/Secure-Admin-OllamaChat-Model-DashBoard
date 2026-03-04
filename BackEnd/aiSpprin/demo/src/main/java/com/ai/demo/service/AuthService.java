@@ -7,6 +7,7 @@ import com.ai.demo.exception.AppException;
 import com.ai.demo.model.User;
 import com.ai.demo.repository.UserRepository;
 import com.ai.demo.security.JwtService;
+import com.ai.demo.security.SuperAdminChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +29,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final SuperAdminChecker superAdminChecker;
 
-    @Value("${app.jwt.expiration-ms}")          // was ${spring.jwt.expiration}
+    @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
     @Transactional
@@ -76,11 +78,11 @@ public class AuthService {
 
     public Mono<AuthResponseDto> refreshToken(String refreshToken) {
         return Mono.fromCallable(() -> {
-            if (!jwtService.isValid(refreshToken)) {            // was isTokenValid()
+            if (!jwtService.isValid(refreshToken)) {
                 throw new AppException("Invalid refresh token", HttpStatus.UNAUTHORIZED);
             }
 
-            String email = jwtService.extractEmail(refreshToken); // was extractUsername()
+            String email = jwtService.extractEmail(refreshToken);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 
@@ -93,17 +95,37 @@ public class AuthService {
     public Mono<User> findOrCreateOAuthUser(String email, String name,
                                             String googleId, String pictureUrl) {
         return Mono.fromCallable(() ->
-                userRepository.findByEmail(email).orElseGet(() -> {
+                userRepository.findByEmail(email).map(existingUser -> {
+                    // ── sync role if it's outdated ──────────────────────────
+                    String correctRole = superAdminChecker.isSuperAdmin(email)
+                            ? "ROLE_SUPER_ADMIN"
+                            : existingUser.getRole();
+
+                    if (!existingUser.getRole().equals(correctRole)) {
+                        existingUser.setRole(correctRole);
+                        log.info("Updating role for {}: {} → {}", email,
+                                existingUser.getRole(), correctRole);
+                    }
+
+                    existingUser.setLastLogin(LocalDateTime.now());
+                    return userRepository.save(existingUser);
+
+                }).orElseGet(() -> {
+                    // ── new user — assign correct role from the start ───────
+                    String role = superAdminChecker.isSuperAdmin(email)
+                            ? "ROLE_SUPER_ADMIN"
+                            : "ROLE_USER";
+
                     User newUser = User.builder()
                             .email(email)
                             .name(name)
                             .googleId(googleId)
                             .pictureUrl(pictureUrl)
-                            .role("ROLE_USER")
+                            .role(role)
                             .isActive(true)
                             .lastLogin(LocalDateTime.now())
                             .build();
-                    log.info("Creating new OAuth user: {}", email);
+                    log.info("Creating new OAuth user: {} with role: {}", email, role);
                     return userRepository.save(newUser);
                 })
         ).subscribeOn(Schedulers.boundedElastic());

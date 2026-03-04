@@ -145,6 +145,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.30</version>    <!-- ← add explicit version -->
                         </path>
                     </annotationProcessorPaths>
 
