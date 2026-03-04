@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MySQL Database
   mysql:
@@ -8,8 +6,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: aibox
-      MYSQL_USER: aibox
-      MYSQL_PASSWORD: aibox123
     ports:
       - "3307:3306"
     volumes:
@@ -40,13 +36,19 @@ services:
       dockerfile: Dockerfile
     container_name: aibox-backend
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      SPRING_R2DBC_URL: r2dbc:mysql://mysql:3306/aibox
-      SPRING_R2DBC_USERNAME: root
-      SPRING_R2DBC_PASSWORD: root
-      SPRING_JWT_SECRET: mySecretKeyForJwtTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm
-      SPRING_JWT_EXPIRATION: 86400000
-      SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: aibox
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      JWT_SECRET: mySecretKeyForJwtTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm
+      JWT_EXPIRATION_MS: 86400000
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: gemma2:2b
+      FRONTEND_URL: http://localhost:4200
+      CORS_ALLOWED_ORIGINS: http://localhost:4200
+      SUPER_ADMIN_EMAIL_DOMAINS: motivitylabs.com
+      SUPER_ADMIN_EMAILS: pool99owner@gmail.com
     ports:
       - "8080:8080"
     depends_on:

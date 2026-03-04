@@ -6,6 +6,7 @@ import { OAuthCallbackComponent } from './pages/oauth-callback/oauth-callback.co
 import { AuthGuard } from './auth/auth.guard';
 import { AdminGuard } from './auth/admin.guard';
 import { SuperAdminGuard } from './auth/super-admin.guard';
+import { SuperAdminDashboardComponent } from './pages/super-admin/super-admin.component';
 
 export const routes: Routes = [
   {

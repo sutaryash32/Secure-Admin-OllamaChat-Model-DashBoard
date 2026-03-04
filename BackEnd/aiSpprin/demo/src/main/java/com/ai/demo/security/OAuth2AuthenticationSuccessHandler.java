@@ -24,7 +24,7 @@ public class OAuth2AuthenticationSuccessHandler implements ServerAuthenticationS
 
     private final JwtService jwtService;
     private final AuthService authService;
-    private final SecurityConfig securityConfig;   // reuse isSuperAdmin()
+    private final SuperAdminChecker superAdminChecker;     // ← inject checker, not SecurityConfig
 
     @Value("${app.frontend.url:http://localhost:4200}")
     private String frontendUrl;
@@ -45,10 +45,9 @@ public class OAuth2AuthenticationSuccessHandler implements ServerAuthenticationS
 
         return authService.findOrCreateOAuthUser(email, name, googleId, pictureUrl)
                 .flatMap(user -> {
-                    // Always reflect the config-based role at login time
-                    String role = securityConfig.isSuperAdmin(email)
+                    String role = superAdminChecker.isSuperAdmin(email)  // ← use checker
                             ? "ROLE_SUPER_ADMIN"
-                            : user.getRole();   // preserve DB role (could be ROLE_SUPER_ADMIN if promoted)
+                            : user.getRole();
 
                     String token        = jwtService.generateToken(email, name, List.of(role));
                     String refreshToken = jwtService.generateRefreshToken(email);
