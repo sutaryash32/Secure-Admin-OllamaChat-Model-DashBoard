@@ -58,13 +58,13 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:mySecretKeyForJwtTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24h
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
-  admin:
-    email-domains: ${ADMIN_EMAIL_DOMAINS:motivitylabs.com}
   frontend:
     url: ${FRONTEND_URL:http://localhost:4200}
+  super-admin:
+    email-domains: ${SUPER_ADMIN_EMAIL_DOMAINS:motivitylabs.com}
 
 # ── Actuator / Prometheus ──────────────────────────────────
 management:

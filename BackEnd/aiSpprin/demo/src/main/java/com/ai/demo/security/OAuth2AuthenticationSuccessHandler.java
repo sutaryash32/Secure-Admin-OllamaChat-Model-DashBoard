@@ -1,4 +1,3 @@
-// BackEnd/aiSpprin/demo/src/main/java/com/ai/demo/security/OAuth2AuthenticationSuccessHandler.java
 package com.ai.demo.security;
 
 import com.ai.demo.service.AuthService;
@@ -25,12 +24,10 @@ public class OAuth2AuthenticationSuccessHandler implements ServerAuthenticationS
 
     private final JwtService jwtService;
     private final AuthService authService;
+    private final SecurityConfig securityConfig;   // reuse isSuperAdmin()
 
     @Value("${app.frontend.url:http://localhost:4200}")
     private String frontendUrl;
-
-    @Value("${app.admin.email-domains}")
-    private String adminEmailDomains;
 
     @Override
     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange,
@@ -48,11 +45,12 @@ public class OAuth2AuthenticationSuccessHandler implements ServerAuthenticationS
 
         return authService.findOrCreateOAuthUser(email, name, googleId, pictureUrl)
                 .flatMap(user -> {
-                    List<String> roles = isAdminUser(email)
-                            ? List.of("ROLE_USER", "ROLE_ADMIN")
-                            : List.of("ROLE_USER");
+                    // Always reflect the config-based role at login time
+                    String role = securityConfig.isSuperAdmin(email)
+                            ? "ROLE_SUPER_ADMIN"
+                            : user.getRole();   // preserve DB role (could be ROLE_SUPER_ADMIN if promoted)
 
-                    String token        = jwtService.generateToken(email, name, roles);
+                    String token        = jwtService.generateToken(email, name, List.of(role));
                     String refreshToken = jwtService.generateRefreshToken(email);
 
                     String redirectUrl = frontendUrl + "/oauth2/callback"
@@ -60,25 +58,15 @@ public class OAuth2AuthenticationSuccessHandler implements ServerAuthenticationS
                             + "&refreshToken=" + encode(refreshToken)
                             + "&username="     + encode(name  != null ? name  : "")
                             + "&email="        + encode(email != null ? email : "")
-                            + "&role="         + encode(isAdminUser(email) ? "ROLE_ADMIN" : "ROLE_USER");
+                            + "&role="         + encode(role);
 
-                    log.info("Redirecting OAuth2 user to frontend callback");
+                    log.info("Redirecting — email={}, role={}", email, role);
 
                     var response = webFilterExchange.getExchange().getResponse();
                     response.setStatusCode(HttpStatus.FOUND);
                     response.getHeaders().setLocation(URI.create(redirectUrl));
                     return response.setComplete();
                 });
-    }
-
-    private boolean isAdminUser(String email) {
-        if (email == null) return false;
-        for (String domain : adminEmailDomains.split(",")) {
-            if (email.toLowerCase().endsWith("@" + domain.trim().toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private String encode(String value) {

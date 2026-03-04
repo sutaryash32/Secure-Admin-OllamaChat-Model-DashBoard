@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 import { sharedComponenet } from '../../utils/shared.component';
 import { AuthService } from '../../auth/auth.service';
 
@@ -11,14 +10,17 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class SidemenuComponent {
 
-  chatPath = '/chat';
-  cricketPath = '/cricket';
-  imagePath = '/image';
+  chatPath       = '/chat';
+  cricketPath    = '/cricket';
+  superAdminPath = '/super-admin';
 
   constructor(private authService: AuthService) {}
+
+  isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
+  }
 
   logout(): void {
     this.authService.logout();
   }
-
 }

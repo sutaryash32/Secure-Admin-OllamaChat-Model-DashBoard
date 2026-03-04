@@ -8,7 +8,7 @@ import { AuthService } from '../auth/auth.service';
 export class ApiService {
 
   private readonly BASE_URL = 'http://localhost:8080/api/v1';
-  private readonly ADMIN_URL = 'http://localhost:8080/api/v1/admin';
+  private readonly SUPER_ADMIN_URL = 'http://localhost:8080/api/v1/super-admin';  // ← fixed
 
   constructor(private authService: AuthService) {}
 
@@ -24,11 +24,11 @@ export class ApiService {
     return this.fetchSse(url);
   }
 
-  // ── Admin ─────────────────────────────────────────────────
+  // ── Super Admin ───────────────────────────────────────────
 
   getAllUsers(): Observable<any> {
     return new Observable(observer => {
-      fetch(`${this.ADMIN_URL}/users`, { headers: this.authHeaders() })
+      fetch(`${this.SUPER_ADMIN_URL}/users`, { headers: this.authHeaders() })
         .then(res => res.json())
         .then(data => { observer.next(data); observer.complete(); })
         .catch(err => observer.error(err));
@@ -37,7 +37,7 @@ export class ApiService {
 
   updateUserRole(id: number, role: string): Observable<any> {
     return new Observable(observer => {
-      fetch(`${this.ADMIN_URL}/users/${id}/role`, {
+      fetch(`${this.SUPER_ADMIN_URL}/users/${id}/role`, {
         method: 'PUT',
         headers: this.authHeaders(),
         body: JSON.stringify({ role })
@@ -48,9 +48,33 @@ export class ApiService {
     });
   }
 
+  disableUser(id: number): Observable<any> {   // ← added
+    return new Observable(observer => {
+      fetch(`${this.SUPER_ADMIN_URL}/users/${id}/disable`, {
+        method: 'PUT',
+        headers: this.authHeaders()
+      })
+        .then(res => res.json())
+        .then(data => { observer.next(data); observer.complete(); })
+        .catch(err => observer.error(err));
+    });
+  }
+
+  enableUser(id: number): Observable<any> {    // ← added
+    return new Observable(observer => {
+      fetch(`${this.SUPER_ADMIN_URL}/users/${id}/enable`, {
+        method: 'PUT',
+        headers: this.authHeaders()
+      })
+        .then(res => res.json())
+        .then(data => { observer.next(data); observer.complete(); })
+        .catch(err => observer.error(err));
+    });
+  }
+
   deleteUser(id: number): Observable<any> {
     return new Observable(observer => {
-      fetch(`${this.ADMIN_URL}/users/${id}`, {
+      fetch(`${this.SUPER_ADMIN_URL}/users/${id}`, {
         method: 'DELETE',
         headers: this.authHeaders()
       })
@@ -64,7 +88,7 @@ export class ApiService {
 
   getChatAnalytics(): Observable<any> {
     return new Observable(observer => {
-      fetch(`${this.ADMIN_URL}/analytics`, { headers: this.authHeaders() })
+      fetch(`${this.SUPER_ADMIN_URL}/analytics`, { headers: this.authHeaders() })
         .then(res => res.json())
         .then(data => { observer.next(data); observer.complete(); })
         .catch(err => observer.error(err));
@@ -81,7 +105,6 @@ export class ApiService {
     };
   }
 
-  // ✅ Uses fetch() instead of EventSource so we can send Authorization header
   private fetchSse(url: string): Observable<string> {
     return new Observable(observer => {
       const token = this.authService.getToken();
@@ -109,7 +132,7 @@ export class ApiService {
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
-            buffer = lines.pop() || '';  // keep incomplete last line
+            buffer = lines.pop() || '';
 
             for (const line of lines) {
               if (line.startsWith('data:')) {
@@ -127,14 +150,13 @@ export class ApiService {
                 }
               }
             }
-            read(); // read next chunk
+            read();
           }).catch(err => observer.error(err));
         };
 
         read();
       }).catch(err => observer.error(err));
 
-      // cleanup on unsubscribe
       return () => { cancelled = true; };
     });
   }

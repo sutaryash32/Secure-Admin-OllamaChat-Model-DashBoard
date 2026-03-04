@@ -39,6 +39,11 @@ export class AuthService {
     }
   }
 
+  isSuperAdmin(): boolean {
+  const user = this.getCurrentUser();
+  return user?.role === 'ROLE_SUPER_ADMIN';
+}
+
   login(username: string, password: string): Observable<any> {
     return new Observable(observer => {
       setTimeout(() => {

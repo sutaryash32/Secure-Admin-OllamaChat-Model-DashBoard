@@ -1,0 +1,98 @@
+<div class="dashboard">
+      <h2>⚙ Super Admin Dashboard</h2>
+
+      <!-- Analytics Cards -->
+      <div class="analytics-row" *ngIf="analytics">
+        <div class="card">
+          <span class="card-value">{{ analytics.totalUsers }}</span>
+          <span class="card-label">Total Users</span>
+        </div>
+        <div class="card green">
+          <span class="card-value">{{ analytics.activeUsers }}</span>
+          <span class="card-label">Active</span>
+        </div>
+        <div class="card red">
+          <span class="card-value">{{ analytics.disabledUsers }}</span>
+          <span class="card-label">Disabled</span>
+        </div>
+        <div class="card blue">
+          <span class="card-value">{{ analytics.totalChats }}</span>
+          <span class="card-label">Total Chats</span>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+      <!-- Users Table -->
+      <div class="table-wrapper">
+        <table *ngIf="users.length > 0; else noUsers">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.id }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span [ngClass]="getRoleBadgeClass(user.role)">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td>
+                <span [ngClass]="user.isActive ? 'badge-active' : 'badge-disabled'">
+                  {{ user.isActive ? 'Active' : 'Disabled' }}
+                </span>
+              </td>
+              <td class="actions">
+                <!-- Promote / Demote -->
+                <button
+                  class="btn btn-promote"
+                  *ngIf="user.role === 'ROLE_USER'"
+                  (click)="assignRole(user, 'ROLE_SUPER_ADMIN')">
+                  Promote
+                </button>
+                <button
+                  class="btn btn-demote"
+                  *ngIf="user.role === 'ROLE_SUPER_ADMIN'"
+                  (click)="assignRole(user, 'ROLE_USER')">
+                  Demote
+                </button>
+
+                <!-- Disable / Enable -->
+                <button
+                  class="btn btn-disable"
+                  *ngIf="user.isActive"
+                  (click)="disableUser(user)">
+                  Disable
+                </button>
+                <button
+                  class="btn btn-enable"
+                  *ngIf="!user.isActive"
+                  (click)="enableUser(user)">
+                  Enable
+                </button>
+
+                <!-- Delete -->
+                <button
+                  class="btn btn-delete"
+                  (click)="deleteUser(user)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #noUsers>
+          <p class="empty">No users found.</p>
+        </ng-template>
+      </div>
+    </div>

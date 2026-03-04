@@ -3,8 +3,11 @@
   <h3>Menu</h3>
 
   <ul class="menu-items">
-    <li><a [routerLink]="chatPath" routerLinkActive="active"> Chat</a></li>
+    <li><a [routerLink]="chatPath" routerLinkActive="active">Chat</a></li>
     <li><a [routerLink]="cricketPath" routerLinkActive="active">Cricket</a></li>
+    <li *ngIf="isSuperAdmin()">
+      <a [routerLink]="superAdminPath" routerLinkActive="active">⚙ Super Admin</a>
+    </li>
   </ul>
 
   <div class="logout-section">
@@ -12,4 +15,5 @@
       ⎋ Logout
     </button>
   </div>
+
 </nav>

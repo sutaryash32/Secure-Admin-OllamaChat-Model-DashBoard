@@ -1,4 +1,3 @@
-// BackEnd/aiSpprin/demo/src/main/java/com/ai/demo/security/SecurityConfig.java
 package com.ai.demo.security;
 
 import com.ai.demo.service.AuthService;
@@ -35,16 +34,16 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
     private final JwtService jwtService;
-    private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;  // ← injected bean
+    private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
-    @Lazy  // breaks circular dep: SecurityConfig → AuthService → PasswordEncoder → SecurityConfig
+    @Lazy
     private final AuthService authService;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
-    @Value("${app.admin.email-domains}")
-    private String adminEmailDomains;
+    @Value("${app.super-admin.email-domains}")
+    private String superAdminEmailDomains;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -56,12 +55,12 @@ public class SecurityConfig {
                         .pathMatchers("/actuator/**").permitAll()
                         .pathMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .pathMatchers("/api/v1/auth/**").permitAll()
-                        .pathMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .pathMatchers("/api/v1/super-admin/**").hasRole("SUPER_ADMIN")
                         .pathMatchers("/api/v1/chat/**").authenticated()
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .authenticationSuccessHandler(oauth2SuccessHandler)  // ← use injected bean
+                        .authenticationSuccessHandler(oauth2SuccessHandler)
                 )
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
@@ -73,14 +72,23 @@ public class SecurityConfig {
         OidcReactiveOAuth2UserService delegate = new OidcReactiveOAuth2UserService();
         return userRequest -> delegate.loadUser(userRequest).map(oidcUser -> {
             String email = oidcUser.getEmail();
-            List<SimpleGrantedAuthority> authorities = isAdminUser(email)
-                    ? List.of(new SimpleGrantedAuthority("ROLE_USER"),
-                    new SimpleGrantedAuthority("ROLE_ADMIN"))
+            List<SimpleGrantedAuthority> authorities = isSuperAdmin(email)
+                    ? List.of(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))
                     : Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
             return (OidcUser) new DefaultOidcUser(
                     authorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), "sub"
             );
         });
+    }
+
+    public boolean isSuperAdmin(String email) {
+        if (email == null) return false;
+        for (String domain : superAdminEmailDomains.split(",")) {
+            if (email.toLowerCase().endsWith("@" + domain.trim().toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Bean
@@ -95,15 +103,5 @@ public class SecurityConfig {
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-
-    private boolean isAdminUser(String email) {
-        if (email == null) return false;
-        for (String domain : adminEmailDomains.split(",")) {
-            if (email.toLowerCase().endsWith("@" + domain.trim().toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
     }
 }
