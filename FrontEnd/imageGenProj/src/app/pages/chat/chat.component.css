@@ -1,37 +1,85 @@
+/* ═══ Futuristic Cartoonish Chat ═══ */
+
 .chat-container {
   margin: auto;
-  max-width: 500px;
+  max-width: 720px;
   height: 89vh;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background-color: #f9f9f9;
+  background: transparent;
 }
 
-/* Message area takes up all remaining space */
+/* Page header with robot */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.header-icon {
+  font-size: 28px;
+  animation: robotBob 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.35));
+}
+
+@keyframes robotBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00f0ff, #b24dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
+}
+
+/* Messages area */
 .message-container {
   flex: 1;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 5px;
+  border: 2px solid rgba(0, 240, 255, 0.12);
+  border-radius: 22px;
+  padding: 16px;
   overflow-y: auto;
-  background-color: #fff;
+  background: rgba(18, 22, 43, 0.6);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(0, 240, 255, 0.04);
 }
 
 /* Input box */
 .chat-input {
   height: 10vh;
   resize: none;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  color: #eef2ff;
+  background: rgba(26, 31, 58, 0.8);
+  border: 2px solid rgba(0, 240, 255, 0.15);
+  border-radius: 18px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
 }
 
 .chat-input::placeholder {
-  color: black;
+  color: #5a6380;
+  font-weight: 600;
 }
 
 /* Button row */
@@ -39,49 +87,61 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
-/* Ask Button */
+/* Ask Button – neon glow pill */
 .chat-button {
   align-self: flex-start;
-  padding: 10px 20px ;
-  background: linear-gradient(135deg, #2c3e50, #4ca1af);
-  color: white;
-  font-weight: bold;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #00c9db, #00f0ff);
+  color: #0b0e1a;
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
   letter-spacing: 1px;
+  text-transform: uppercase;
   border: none;
-  border-radius: 30px;
+  border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 10px;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
 }
 
 .chat-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34495e, #2c3e50);
-  transform: scale(1.05);
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
 }
 
-
+.chat-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* Stop Button */
 .stop-button {
   align-self: flex-start;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #c0392b, #e74c3c);
-  color: white;
-  font-weight: bold;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #ff0050, #ff4d6d);
+  color: #fff;
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
   letter-spacing: 1px;
+  text-transform: uppercase;
   border: none;
-  border-radius: 25px;
+  border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 10px;
+  box-shadow: 0 0 20px rgba(255, 0, 80, 0.25);
 }
 
 .stop-button:hover {
-  background: linear-gradient(135deg, #a93226, #c0392b);
-  transform: scale(1.05);
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 0 35px rgba(255, 0, 80, 0.4);
 }
 
 .stop-button:disabled {
@@ -90,43 +150,53 @@
   transform: none;
 }
 
-/* User messages */
+/* User messages – neon cyan bubble */
 .message-container .user {
   display: flex;
   justify-content: flex-end;
 }
 
 .message-container .user p {
-  background-color: #d1e7dd;
-  color: #000;
-  padding: 8px 12px;
-  border-radius: 15px;
-  margin: 5px 0;
-  max-width: 70%;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 200, 220, 0.15));
+  color: #e0faff;
+  padding: 10px 16px;
+  border-radius: 20px 20px 6px 20px;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  margin: 6px 0;
+  max-width: 75%;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 12px rgba(0, 240, 255, 0.08);
 }
 
-/* Bot messages */
+/* Bot messages – neon purple bubble */
 .message-container .bot {
   display: flex;
   justify-content: flex-start;
 }
 
 .message-container .bot p {
-  background-color: #e2e3e5;
-  color: #000;
-  padding: 8px 12px;
-  border-radius: 15px;
-  margin: 5px 0;
-  max-width: 70%;
+  background: linear-gradient(135deg, rgba(178, 77, 255, 0.15), rgba(140, 60, 220, 0.1));
+  color: #e8deff;
+  padding: 10px 16px;
+  border-radius: 20px 20px 20px 6px;
+  border: 1px solid rgba(178, 77, 255, 0.2);
+  margin: 6px 0;
+  max-width: 75%;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 12px rgba(178, 77, 255, 0.08);
 }
 
+/* Thinking dots animation */
 .thinking-dots {
-  animation: blink 1s infinite;
-  color: #aaa;
-  letter-spacing: 4px;
+  animation: pulse-glow 1.2s ease-in-out infinite;
+  color: #b24dff;
+  letter-spacing: 6px;
+  font-size: 18px;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(178, 77, 255, 0.5); }
+  50%      { opacity: 0.3; text-shadow: none; }
 }

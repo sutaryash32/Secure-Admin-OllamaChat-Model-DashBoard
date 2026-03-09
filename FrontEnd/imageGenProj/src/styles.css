@@ -1,7 +1,50 @@
-/* You can add global styles to this file, and also import other style files */
+/* ═══════════════════════════════════════════════════════════
+   FUTURISTIC CARTOONISH THEME – Global Styles
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Core palette */
+  --bg-deep:        #0b0e1a;
+  --bg-surface:     #12162b;
+  --bg-card:        #1a1f3a;
+  --neon-cyan:      #00f0ff;
+  --neon-magenta:   #ff00e5;
+  --neon-lime:      #a8ff00;
+  --neon-purple:    #b24dff;
+  --neon-orange:    #ff6b2b;
+  --text-primary:   #eef2ff;
+  --text-muted:     #8892b0;
+  --border-glow:    rgba(0, 240, 255, 0.25);
+  --shadow-neon:    0 0 20px rgba(0, 240, 255, 0.15), 0 0 60px rgba(0, 240, 255, 0.05);
+  --radius-bubbly:  18px;
+  --radius-pill:    50px;
+  --font-main:      'Nunito', sans-serif;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* prevent page-level scrollbar */
+  overflow: hidden;
+  font-family: var(--font-main);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+  border-radius: 10px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(0, 240, 255, 0.3);
+  color: #fff;
 }

@@ -1,18 +1,49 @@
 <nav>
 
-  <h3>Menu</h3>
+  <!-- Animated Robot Mascot -->
+  <div class="mascot-area">
+    <div class="robot-mascot">🤖</div>
+    <div class="brand">AskAI</div>
+    <div class="brand-tagline">Your AI Companion</div>
+  </div>
+
+  <div class="nav-divider"></div>
+
+  <h3>Navigation</h3>
 
   <ul class="menu-items">
-    <li><a [routerLink]="chatPath" routerLinkActive="active">Chat</a></li>
-    <li><a [routerLink]="cricketPath" routerLinkActive="active">Cricket</a></li>
+    <li>
+      <a [routerLink]="chatPath" routerLinkActive="active">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Chat</span>
+        <span class="nav-arrow">›</span>
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="cricketPath" routerLinkActive="active">
+        <span class="nav-icon">🏏</span>
+        <span class="nav-label">Cricket</span>
+        <span class="nav-arrow">›</span>
+      </a>
+    </li>
     <li *ngIf="isSuperAdmin()">
-      <a [routerLink]="superAdminPath" routerLinkActive="active">⚙ Super Admin</a>
+      <a [routerLink]="superAdminPath" routerLinkActive="active">
+        <span class="nav-icon">🔧</span>
+        <span class="nav-label">Super Admin</span>
+        <span class="nav-arrow">›</span>
+      </a>
     </li>
   </ul>
 
+  <!-- Powered by badge -->
+  <div class="powered-badge">
+    <span class="powered-dot"></span>
+    🤖 Powered by Ollama
+  </div>
+
   <div class="logout-section">
     <button id="logout-btn" class="logout-btn" (click)="logout()">
-      ⎋ Logout
+      🚪 Logout
     </button>
   </div>
 

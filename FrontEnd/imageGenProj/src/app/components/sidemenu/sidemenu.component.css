@@ -1,67 +1,226 @@
-.menu-items {
-  list-style: none;
-  padding: 0;
-  margin-top: 20px;
-}
+/* ═══ Futuristic Cartoonish Sidemenu – Enhanced ═══ */
 
-.menu-items a {
-  color: white;              /* force text color */
-  text-decoration: none;     /* remove underline */
-  display: block;
-  padding: 10px;
-  border-radius: 4px;
-}
-
-.menu-items a:hover,
-.menu-items a.active {
-  background-color: #34495e; /* highlight on hover/active */
-  color: #fff;               /* keep text white */
-}
-
-
-.menu-items li {
-
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.menu-items li:hover {
-  background-color: #34495e;
-}
-
-/* ── Logout button ─────────────────────── */
-
-.logout-section {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid #44596e;
-}
-
-.logout-btn {
-  width: 100%;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: #c0392b;
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.logout-btn:hover {
-  background-color: #e74c3c;
-}
-
-.logout-btn:active {
-  background-color: #a93226;
-}
-
-/* Make nav a flex column so logout pins to bottom */
+/* ── Nav flex column ── */
 :host ::ng-deep nav,
 nav {
   display: flex;
   flex-direction: column;
   height: 100%;
+  gap: 4px;
+}
+
+/* ── Robot Mascot Area ── */
+.mascot-area {
+  text-align: center;
+  padding: 10px 0 6px;
+}
+
+.robot-mascot {
+  font-size: 52px;
+  line-height: 1;
+  animation: robotFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(0, 240, 255, 0.4));
+  margin-bottom: 6px;
+}
+
+@keyframes robotFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-6px) rotate(-3deg); }
+  75%      { transform: translateY(-6px) rotate(3deg); }
+}
+
+.brand {
+  font-size: 26px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00f0ff, #b24dff, #ff00e5);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease-in-out infinite;
+  letter-spacing: -0.5px;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+.brand-tagline {
+  font-size: 11px;
+  color: #5a6380;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── Divider ── */
+.nav-divider {
+  height: 1px;
+  margin: 12px 8px;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.25), rgba(178, 77, 255, 0.2), transparent);
+}
+
+/* ── Section heading ── */
+nav h3 {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #4a5270;
+  font-weight: 800;
+  margin: 4px 0 2px 8px;
+}
+
+/* ── Menu items ── */
+.menu-items {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+}
+
+.menu-items li {
+  padding: 3px 0;
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+.menu-items a {
+  color: #9aa3c4;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.nav-icon {
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(0, 240, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.nav-label {
+  flex: 1;
+}
+
+.nav-arrow {
+  font-size: 18px;
+  font-weight: 900;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all 0.3s ease;
+  color: #00f0ff;
+}
+
+.menu-items a:hover {
+  background: rgba(0, 240, 255, 0.06);
+  border-color: rgba(0, 240, 255, 0.15);
+  color: #d0d8f8;
+  transform: translateX(4px);
+}
+
+.menu-items a:hover .nav-arrow {
+  opacity: 0.6;
+  transform: translateX(0);
+}
+
+.menu-items a:hover .nav-icon {
+  background: rgba(0, 240, 255, 0.12);
+}
+
+.menu-items a.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(178, 77, 255, 0.1));
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #00f0ff;
+  box-shadow:
+    0 0 20px rgba(0, 240, 255, 0.08),
+    inset 0 0 20px rgba(0, 240, 255, 0.03);
+}
+
+.menu-items a.active .nav-icon {
+  background: rgba(0, 240, 255, 0.18);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+}
+
+.menu-items a.active .nav-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Powered badge ── */
+.powered-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a5270;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  background: rgba(0, 240, 255, 0.03);
+  border: 1px solid rgba(0, 240, 255, 0.06);
+}
+
+.powered-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a8ff00;
+  box-shadow: 0 0 8px rgba(168, 255, 0, 0.5);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(168, 255, 0, 0.5); }
+  50%      { opacity: 0.5; box-shadow: 0 0 4px rgba(168, 255, 0, 0.2); }
+}
+
+/* ── Logout section ── */
+.logout-section {
+  padding-top: 14px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(0, 240, 255, 0.08);
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 11px 18px;
+  border: 2px solid rgba(255, 0, 80, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 0, 80, 0.06);
+  color: #ff6b8a;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.5px;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 0, 80, 0.14);
+  border-color: rgba(255, 77, 109, 0.5);
+  box-shadow: 0 0 20px rgba(255, 0, 80, 0.1);
+  transform: translateY(-1px);
+  color: #ff4d6d;
+}
+
+.logout-btn:active {
+  transform: translateY(0);
 }

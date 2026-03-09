@@ -30,7 +30,7 @@ public class JwtService {
                 .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(signingKey(), Jwts.SIG.HS512)  // ✅ explicit HS512
+                .signWith(signingKey(), Jwts.SIG.HS512)
                 .compact();
     }
 
@@ -39,7 +39,7 @@ public class JwtService {
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs * 7))
-                .signWith(signingKey(), Jwts.SIG.HS512)  // ✅ explicit HS512
+                .signWith(signingKey(), Jwts.SIG.HS512)
                 .compact();
     }
 
@@ -52,7 +52,7 @@ public class JwtService {
         }
     }
 
-    // alias for backward compatibility
+
     public boolean isTokenValid(String token) {
         return isValid(token);
     }
@@ -65,7 +65,7 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    @SuppressWarnings("unchecked")
+
     public List<String> extractRoles(String token) {
         List<String> roles = extractClaim(token, c -> c.get("roles", List.class));
         return roles != null ? roles : List.of();

@@ -1,26 +1,52 @@
-/* Ensure the host element fills the full viewport */
+/* ═══ Futuristic Root Layout ═══ */
 :host {
   display: block;
   width: 100%;
   height: 100vh;
 }
 
-/* Authenticated layout: sidebar + content */
 .container {
   display: flex;
   height: 100vh;
+  background: var(--bg-deep);
 }
 
 .sidebar {
-  width: 250px;
-  background-color: #2c3e50;
-  color: white;
-  padding: 20px;
+  width: 260px;
+  background: linear-gradient(180deg, #0f1429 0%, #151b38 50%, #0f1429 100%);
+  border-right: 1px solid rgba(0, 240, 255, 0.1);
+  color: var(--text-primary);
+  padding: 24px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle glow line on sidebar right edge */
+.sidebar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--neon-cyan), transparent);
+  opacity: 0.5;
 }
 
 .content {
   flex: 1;
-  background-color: #ecf0f1;
-  padding: 20px;
+  background: var(--bg-deep);
+  padding: 24px;
   overflow-y: auto;
+  position: relative;
+}
+
+/* Subtle dot pattern on content background */
+.content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
 }
